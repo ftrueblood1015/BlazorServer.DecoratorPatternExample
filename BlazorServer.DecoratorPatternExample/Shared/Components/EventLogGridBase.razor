@@ -1,0 +1,62 @@
+﻿@using BlazorServer.DecoratorPatternExample.Services
+@using DecoratorPatternExample.Domain.Models;
+@typeparam T where T : EventLogger
+
+<MudDataGrid @attributes="Splats.DataGrid(Title!)" T="T" Items="@Entities" SortMode="SortMode.Multiple" Filterable="true" QuickFilter="@QuickFilter" Hideable="true">
+    <ToolBarContent>
+    <MudText @attributes="Splats.PageHeader(Title!)">@Title</MudText>
+        <MudSpacer />
+        <MudTextField @attributes='Splats.SearchField()' @bind-Value="SearchString" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.Service" Title="Service" Sortable="true" Filterable="false" />
+        <PropertyColumn Property="x => x.Action" Title="Action" />
+        <PropertyColumn Property="x => x.RequestData" Title="Data" />
+        <PropertyColumn Property="x => x.ActionDateTime" Title="Date" InitialDirection="SortDirection.Descending" />
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="T" />
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    [Inject]
+    private IServiceBase<T>? Service { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    public List<T>? Entities { get; set; }
+
+    private string? SearchString { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        GetData();
+    }
+
+    public void GetData()
+    {
+        if (Service == null)
+        {
+            throw new Exception($"{nameof(Service)}  is null!");
+        }
+        var Response = Service.GetAll();
+        Entities = Response != null ? Response.ToList() : new List<T>();
+        StateHasChanged();
+    }
+
+    private Func<T, bool> QuickFilter => x =>
+        {
+            if (string.IsNullOrWhiteSpace(SearchString))
+                return true;
+
+            if (x.Description!.Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (x.Name!.Contains(SearchString, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return false;
+        };
+}

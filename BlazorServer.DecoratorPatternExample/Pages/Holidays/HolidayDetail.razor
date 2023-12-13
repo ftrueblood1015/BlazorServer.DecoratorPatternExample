@@ -1,0 +1,6 @@
+﻿@page "/holidaydetail"
+@page "/holidaydetail/{HolidayId:int}"
+@using DecoratorPatternExample.Domain.Models;
+@using BlazorServer.DecoratorPatternExample.Shared.Components;
+
+<CalendarModelBaseForm T="Holiday" CancelRoute="holidays" Title="Holiday" EntityId="@HolidayId"></CalendarModelBaseForm>
